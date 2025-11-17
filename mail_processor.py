@@ -106,6 +106,37 @@ def upload_to_webdav_with_retry(config: Dict[str, Any], data: bytes, remote_file
     return False
 
 
+def webdav_file_exists(webdav_config: Dict[str, Any], filename: str) -> bool:
+    """使用 HEAD 请求检查文件是否存在于 WebDAV 服务器上。"""
+    full_url = f"{webdav_config['url'].rstrip('/')}/{filename}"
+    auth = (webdav_config['login'], webdav_config['password'])
+    try:
+        response = requests.head(full_url, auth=auth, timeout=10)
+        return response.status_code == 200
+    except requests.exceptions.RequestException:
+        # 在出错时假定文件不存在，以避免阻塞上传
+        return False
+
+
+def find_unique_filename(config: Dict[str, Any], original_filename: str) -> str:
+    """
+    在 WebDAV 服务器上查找唯一文件名以防止覆盖。
+    如果 'file.txt' 存在，它将尝试 'file (1).txt', 'file (2).txt' 等。
+    """
+    webdav_config = config['webdav']
+    if not webdav_file_exists(webdav_config, original_filename):
+        return original_filename
+
+    name, extension = os.path.splitext(original_filename)
+    counter = 1
+    while True:
+        new_filename = f"{name} ({counter}){extension}"
+        if not webdav_file_exists(webdav_config, new_filename):
+            logger.info(f"文件名 '{original_filename}' 已存在。使用新名称: '{new_filename}'")
+            return new_filename
+        counter += 1
+
+
 def sanitize_filename(filename: str) -> str:
     filename = filename.replace('..', '')
     return re.sub(r'[<>:"/\\|?*]', '_', filename)
@@ -167,8 +198,12 @@ def _process_single_message(imbox: Imbox, uid: bytes, message: Any, config: Dict
             original_filename = decode_email_header(attachment.get('filename'))
             safe_filename = sanitize_filename(original_filename)
             logger.info(f"[UID: {uid_str}] 发现附件: '{original_filename}' -> 清理后: '{safe_filename}'")
+
+            # 查找唯一文件名以避免冲突
+            final_filename = find_unique_filename(config, safe_filename)
+
             attachment_content = attachment.get('content').read()
-            if not upload_to_webdav_with_retry(config, attachment_content, safe_filename):
+            if not upload_to_webdav_with_retry(config, attachment_content, final_filename):
                 all_attachments_succeeded = False
                 logger.warning(f"[UID: {uid_str}] -> 附件 '{original_filename}' 上传失败，此邮件将不会被删除。")
                 break
