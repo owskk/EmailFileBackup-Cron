@@ -1,19 +1,42 @@
 import os
+import secrets
+import logging
 import requests
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, abort, Response, url_for
 from mail_processor import process_emails, load_config
-from database import get_logs_paginated, get_total_log_count
+from database import get_logs_paginated, get_total_log_count, get_log_count_by_status, get_db_connection
 from math import ceil, floor, log
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
+
+# --- 配置验证 ---
+def validate_api_keys():
+    """验证 API 密钥长度是否足够安全"""
+    api_key = os.getenv("API_SECRET_KEY", "")
+    internal_key = os.getenv("INTERNAL_API_KEY", "")
+    web_pass = os.getenv("WEB_AUTH_PASSWORD", "")
+    
+    if len(api_key) < 32:
+        logger.warning("⚠️ API_SECRET_KEY 长度少于32字符,建议使用更强的密钥!")
+    if len(internal_key) < 32:
+        logger.warning("⚠️ INTERNAL_API_KEY 长度少于32字符,建议使用更强的密钥!")
+    if not web_pass:
+        logger.error("❌ WEB_AUTH_PASSWORD 未设置,Web界面将无法访问!")
+
+# 应用启动时验证配置
+validate_api_keys()
 
 # --- 认证 ---
 def check_auth(username, password):
-    """检查用户名和密码是否正确。"""
+    """检查用户名和密码是否正确,使用时序攻击安全的比较。"""
     web_user = os.getenv("WEB_AUTH_USER", "admin")
     web_pass = os.getenv("WEB_AUTH_PASSWORD", "")
-    return username == web_user and password == web_pass
+    
+    # 使用 secrets.compare_digest 防止时序攻击
+    return (secrets.compare_digest(username, web_user) and 
+            secrets.compare_digest(password, web_pass))
 
 def authenticate():
     """发送一个 401 响应，请求认证。"""
@@ -120,7 +143,30 @@ def internal_worker():
         process_emails()
         return jsonify({"status": "success"}), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        # 记录详细错误但不暴露给客户端
+        logger.error(f"邮件处理失败: {e}", exc_info=True)
+        return jsonify({"status": "error", "message": "邮件处理失败,请查看日志"}), 500
+
+@app.route('/health')
+def health_check():
+    """健康检查端点,用于监控和自动化检测"""
+    try:
+        # 检查数据库连接
+        conn = get_db_connection()
+        if conn:
+            conn.close()
+            return jsonify({
+                "status": "healthy",
+                "database": "connected"
+            }), 200
+    except Exception as e:
+        logger.error(f"健康检查失败: {e}")
+        return jsonify({
+            "status": "unhealthy",
+            "database": "disconnected"
+        }), 503
+    
+    return jsonify({"status": "unhealthy"}), 503
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

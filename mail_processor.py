@@ -10,6 +10,7 @@ import os
 from typing import Dict, Any
 from email.header import decode_header
 from urllib.parse import unquote
+from functools import lru_cache
 
 import requests
 from imbox import Imbox
@@ -31,10 +32,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# --- 配置常量 ---
+MAX_ATTACHMENT_SIZE = int(os.getenv("MAX_ATTACHMENT_SIZE_MB", 50)) * 1024 * 1024  # 默认50MB
+MAX_EMAILS_PER_RUN = int(os.getenv("MAX_EMAILS_PER_RUN", 10))  # 默认每次最多处理10封
 
+
+
+@lru_cache(maxsize=1)
 def load_config() -> Dict[str, Any]:
     """
     从环境变量加载配置，并为缺失的值提供默认值。
+    使用 lru_cache 避免重复加载,提升性能。
     """
     logger.info("正在从环境变量加载配置...")
     config = {
@@ -91,7 +99,12 @@ def upload_to_webdav(config: Dict[str, Any], data: bytes, remote_filename: str) 
     file_size = len(data)
 
     try:
-        logger.info(f"开始上传附件到: {full_url}")
+        logger.info(f"开始上传附件: '{remote_filename}' ({file_size / 1024:.2f} KB)")
+        
+        # 大文件上传提示
+        if file_size > 5 * 1024 * 1024:  # > 5MB
+            logger.info(f"正在上传大文件 ({file_size / 1024 / 1024:.2f} MB),请稍候...")
+        
         response = requests.put(full_url, data=data, auth=auth, timeout=30)
         response.raise_for_status()
         logger.info(f"✅ WebDAV 上传成功: '{remote_filename}'")
@@ -208,6 +221,15 @@ def _process_single_message(imbox: Imbox, uid: bytes, message: Any, config: Dict
             final_filename = find_unique_filename(config, safe_filename)
 
             attachment_content = attachment.get('content').read()
+            
+            # 检查附件大小
+            attachment_size = len(attachment_content)
+            if attachment_size > MAX_ATTACHMENT_SIZE:
+                logger.warning(
+                    f"[UID: {uid_str}] 附件 '{original_filename}' "
+                    f"超过大小限制 ({attachment_size / 1024 / 1024:.2f} MB > {MAX_ATTACHMENT_SIZE / 1024 / 1024} MB),跳过"
+                )
+                continue
 
             if not upload_to_webdav(config, attachment_content, final_filename):
                 all_attachments_succeeded = False
@@ -254,8 +276,17 @@ def process_emails() -> None:
                 logger.info(f"没有找到主题为 '{search_subject}' 的新邮件。")
                 return
 
-            logger.info(f"找到 {len(unread_messages)} 封相关邮件，开始处理...")
+            logger.info(f"找到 {len(unread_messages)} 封相关邮件,开始处理...")
+            
+            processed_count = 0
             for uid, message in unread_messages:
+                # 批量处理限制
+                if processed_count >= MAX_EMAILS_PER_RUN:
+                    logger.info(
+                        f"已处理 {MAX_EMAILS_PER_RUN} 封邮件,剩余邮件将在下次运行时处理"
+                    )
+                    break
+                
                 uid_str = uid.decode()
                 logger.info("-" * 40)
                 logger.info(f"正在处理邮件 - UID: {uid_str}, 主题: '{message.subject}'")
@@ -267,9 +298,13 @@ def process_emails() -> None:
                 if _process_single_message(imbox, uid, message, config):
                     imbox.delete(uid)
                     logger.info(f"✅ [UID: {uid_str}] 邮件已成功处理并删除。")
+                    processed_count += 1
                 else:
-                    # 如果处理失败，邮件将保持已读状态，不会在下次被获取
-                    logger.error(f"❌ [UID: {uid_str}] 邮件处理失败，将保持已读状态但不会被删除。")
+                    # 如果处理失败,邮件将保持已读状态,不会在下次被获取
+                    logger.error(f"❌ [UID: {uid_str}] 邮件处理失败,将保持已读状态但不会被删除。")
+            
+            if processed_count > 0:
+                logger.info(f"✅ 本次执行共成功处理 {processed_count} 封邮件。")
     except (errno.ConnectionError, OSError) as e:
         logger.error(f"❌ 连接或处理邮箱时发生严重错误: {e}")
     except Exception as e:
