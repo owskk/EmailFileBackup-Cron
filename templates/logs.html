@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
             margin: 0;
             padding: 2rem;
         }
+
         .container {
             max-width: 1000px;
             margin: 2rem auto;
@@ -20,6 +22,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
         }
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -28,23 +31,28 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid #e9ecef;
         }
+
         h1 {
             color: #2c3e50;
             margin: 0;
         }
+
         .home-link {
             color: #3498db;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
         }
+
         .home-link:hover {
             color: #2980b9;
         }
+
         .search-form {
             margin-bottom: 2rem;
             display: flex;
         }
+
         .search-form input[type="text"] {
             flex-grow: 1;
             padding: 0.75rem;
@@ -52,6 +60,7 @@
             border-radius: 6px 0 0 6px;
             font-size: 1rem;
         }
+
         .search-form button {
             padding: 0.75rem 1.5rem;
             border: 1px solid #3498db;
@@ -61,19 +70,24 @@
             cursor: pointer;
             font-size: 1rem;
         }
+
         .search-form button:hover {
             background-color: #2980b9;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1.5rem;
         }
-        th, td {
+
+        th,
+        td {
             padding: 1rem 1.25rem;
             text-align: left;
             border-bottom: 1px solid #e9ecef;
         }
+
         th {
             background-color: #f8f9fa;
             font-weight: 600;
@@ -81,29 +95,36 @@
             text-transform: uppercase;
             font-size: 0.85rem;
         }
+
         tbody tr:hover {
             background-color: #f1f3f5;
         }
+
         .status-success {
             color: #2ecc71;
             font-weight: bold;
         }
+
         .status-failed {
             color: #e74c3c;
             font-weight: bold;
         }
+
         .no-logs {
             text-align: center;
             color: #7f8c8d;
             padding: 3rem;
             font-size: 1.1rem;
         }
+
         .pagination {
             display: flex;
             justify-content: center;
             margin-top: 2.5rem;
         }
-        .pagination a, .pagination span {
+
+        .pagination a,
+        .pagination span {
             color: #3498db;
             padding: 0.75rem 1rem;
             margin: 0 0.25rem;
@@ -112,31 +133,130 @@
             border-radius: 6px;
             transition: background-color 0.3s, color 0.3s;
         }
+
         .pagination a:hover {
             background-color: #3498db;
             color: #fff;
             border-color: #3498db;
         }
+
         .pagination .current {
             background-color: #3498db;
             color: #fff;
             border-color: #3498db;
             font-weight: bold;
         }
+
         .pagination .disabled {
             color: #bdc3c7;
             pointer-events: none;
             border-color: #ddd;
         }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .auto-refresh-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .auto-refresh-control select {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .auto-refresh-control select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #refreshStatus {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #2ecc71;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(24px);
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>附件上传日志</h1>
-            <a href="/" class="home-link">返回首页</a>
+            <div class="header-controls">
+                <div class="auto-refresh-control">
+                    <label class="switch">
+                        <input type="checkbox" id="autoRefreshToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="refreshStatus">自动刷新: 关闭</span>
+                    <select id="refreshInterval" disabled>
+                        <option value="10">10秒</option>
+                        <option value="30" selected>30秒</option>
+                        <option value="60">60秒</option>
+                    </select>
+                </div>
+                <a href="/" class="home-link">返回首页</a>
+            </div>
         </div>
-        
+
         <form action="{{ url_for('view_logs') }}" method="get" class="search-form">
             <input type="text" name="q" placeholder="按文件名搜索..." value="{{ search_query or '' }}">
             <button type="submit">搜索</button>
@@ -160,41 +280,109 @@
                     <td>{{ log.size_readable }}</td>
                     <td>
                         {% if log.status == 'Success' %}
-                            <span class="status-success">成功</span>
+                        <span class="status-success">成功</span>
                         {% else %}
-                            <span class="status-failed">失败</span>
+                        <span class="status-failed">失败</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        
+
         <div class="pagination">
             {% if page > 1 %}
-                <a href="{{ url_for('view_logs', page=page-1, q=search_query) }}">« 上一页</a>
+            <a href="{{ url_for('view_logs', page=page-1, q=search_query) }}">« 上一页</a>
             {% else %}
-                <span class="disabled">« 上一页</span>
+            <span class="disabled">« 上一页</span>
             {% endif %}
 
             {% for p in range(1, total_pages + 1) %}
-                {% if p == page %}
-                    <span class="current">{{ p }}</span>
-                {% else %}
-                    <a href="{{ url_for('view_logs', page=p, q=search_query) }}">{{ p }}</a>
-                {% endif %}
+            {% if p == page %}
+            <span class="current">{{ p }}</span>
+            {% else %}
+            <a href="{{ url_for('view_logs', page=p, q=search_query) }}">{{ p }}</a>
+            {% endif %}
             {% endfor %}
 
-            {% if page < total_pages %}
-                <a href="{{ url_for('view_logs', page=page+1, q=search_query) }}">下一页 »</a>
-            {% else %}
+            {% if page < total_pages %} <a href="{{ url_for('view_logs', page=page+1, q=search_query) }}">下一页 »</a>
+                {% else %}
                 <span class="disabled">下一页 »</span>
-            {% endif %}
+                {% endif %}
         </div>
 
         {% else %}
         <p class="no-logs">还没有任何日志记录。</p>
         {% endif %}
     </div>
+    <script>
+        // 自动刷新控制
+        let refreshTimer = null;
+        const toggle = document.getElementById('autoRefreshToggle');
+        const statusText = document.getElementById('refreshStatus');
+        const intervalSelect = document.getElementById('refreshInterval');
+
+        // 从 localStorage 加载用户设置
+        const savedEnabled = localStorage.getItem('autoRefreshEnabled') === 'true';
+        const savedInterval = localStorage.getItem('refreshInterval') || '30';
+
+        toggle.checked = savedEnabled;
+        intervalSelect.value = savedInterval;
+        updateStatus();
+
+        // 如果之前是开启状态，启动刷新
+        if (savedEnabled) {
+            startAutoRefresh();
+        }
+
+        // 切换开关事件
+        toggle.addEventListener('change', function () {
+            localStorage.setItem('autoRefreshEnabled', this.checked);
+            if (this.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+            updateStatus();
+        });
+
+        // 刷新间隔改变事件
+        intervalSelect.addEventListener('change', function () {
+            localStorage.setItem('refreshInterval', this.value);
+            if (toggle.checked) {
+                stopAutoRefresh();
+                startAutoRefresh();
+            }
+        });
+
+        function startAutoRefresh() {
+            intervalSelect.disabled = false;
+            const interval = parseInt(intervalSelect.value) * 1000;
+            refreshTimer = setTimeout(function () {
+                window.location.reload();
+            }, interval);
+        }
+
+        function stopAutoRefresh() {
+            intervalSelect.disabled = true;
+            if (refreshTimer) {
+                clearTimeout(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        function updateStatus() {
+            if (toggle.checked) {
+                statusText.textContent = `自动刷新: 开启 (${intervalSelect.value}秒)`;
+                statusText.style.color = '#2ecc71';
+                intervalSelect.disabled = false;
+            } else {
+                statusText.textContent = '自动刷新: 关闭';
+                statusText.style.color = '#495057';
+                intervalSelect.disabled = true;
+            }
+        }
+    </script>
 </body>
+
 </html>

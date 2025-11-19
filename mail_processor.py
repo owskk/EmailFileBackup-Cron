@@ -88,7 +88,7 @@ def validate_config(config: Dict[str, Any]) -> bool:
     return True
 
 
-def upload_to_webdav(config: Dict[str, Any], data: bytes, remote_filename: str) -> bool:
+def upload_to_webdav(config: Dict[str, Any], data: Any, remote_filename: str, file_size: int) -> bool:
     """
     将数据单次上传到 WebDAV 服务器。
     如果上传失败，记录错误并返回 False。
@@ -96,7 +96,6 @@ def upload_to_webdav(config: Dict[str, Any], data: bytes, remote_filename: str) 
     webdav_config = config['webdav']
     full_url = f"{webdav_config['url'].rstrip('/')}/{remote_filename}"
     auth = (webdav_config['login'], webdav_config['password'])
-    file_size = len(data)
 
     try:
         logger.info(f"开始上传附件: '{remote_filename}' ({file_size / 1024:.2f} KB)")
@@ -220,10 +219,18 @@ def _process_single_message(imbox: Imbox, uid: bytes, message: Any, config: Dict
             # 查找唯一文件名以避免冲突
             final_filename = find_unique_filename(config, safe_filename)
 
-            attachment_content = attachment.get('content').read()
+            attachment_content = attachment.get('content')
             
-            # 检查附件大小
-            attachment_size = len(attachment_content)
+            # 检查附件大小 (不读取整个文件到内存)
+            if hasattr(attachment_content, 'getbuffer'):
+                 attachment_size = attachment_content.getbuffer().nbytes
+            else:
+                # Fallback for other file-like objects
+                pos = attachment_content.tell()
+                attachment_content.seek(0, 2)
+                attachment_size = attachment_content.tell()
+                attachment_content.seek(pos)
+
             if attachment_size > MAX_ATTACHMENT_SIZE:
                 logger.warning(
                     f"[UID: {uid_str}] 附件 '{original_filename}' "
@@ -231,7 +238,7 @@ def _process_single_message(imbox: Imbox, uid: bytes, message: Any, config: Dict
                 )
                 continue
 
-            if not upload_to_webdav(config, attachment_content, final_filename):
+            if not upload_to_webdav(config, attachment_content, final_filename, attachment_size):
                 all_attachments_succeeded = False
                 logger.warning(f"[UID: {uid_str}] -> 附件 '{original_filename}' 上传失败，此邮件将不会被删除。")
                 break
@@ -291,9 +298,9 @@ def process_emails() -> None:
                 logger.info("-" * 40)
                 logger.info(f"正在处理邮件 - UID: {uid_str}, 主题: '{message.subject}'")
 
-                # --- 关键改动: 立即标记为已读，防止并发 ---
-                imbox.mark_seen(uid)
-                logger.info(f"[UID: {uid_str}] 已立即标记为已读，以防止重复处理。")
+                # --- 关键改动: 不再立即标记为已读，依赖数据库锁防止并发 ---
+                # imbox.mark_seen(uid) 
+                # logger.info(f"[UID: {uid_str}] 已立即标记为已读，以防止重复处理。")
 
                 if _process_single_message(imbox, uid, message, config):
                     imbox.delete(uid)

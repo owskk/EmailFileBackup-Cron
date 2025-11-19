@@ -5,11 +5,18 @@ import requests
 from functools import wraps
 from flask import Flask, render_template, request, jsonify, abort, Response, url_for
 from mail_processor import process_emails, load_config
-from database import get_logs_paginated, get_total_log_count, get_log_count_by_status, get_db_connection
+from database import get_logs_paginated, get_total_log_count, get_log_count_by_status, get_db_connection, init_db, cleanup_stale_locks
 from math import ceil, floor, log
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
+
+# 初始化数据库
+try:
+    init_db()
+    cleanup_stale_locks()  # 启动时无条件清理所有锁（新实例，旧锁无效）
+except Exception as e:
+    logger.error(f"数据库初始化失败: {e}")
 
 # --- 配置验证 ---
 def validate_api_keys():
