@@ -16,16 +16,19 @@
 ### 高级特性
 - **多服务器支持**: 支持配置和管理多个 WebDAV 服务器
 - **服务器管理**: 可视化界面手动选择默认上传服务器
-- **WebDAV 文件浏览**: dufs 风格的在线文件浏览和下载
+- **WebDAV 文件浏览**: 简洁的在线文件浏览和下载
 - **智能限制**: 支持附件大小限制和批量处理限制，避免资源耗尽
 - **日志记录**: 所有同步活动记录在 MySQL 数据库中，显示上传到的服务器
-- **现代化 Web 界面**: 🎨 卡片式导航设计,提供受密码保护的管理界面
+- **现代化 Web 界面**: 🎨 极简设计风格,提供受密码保护的管理界面
+  - 📊 Dashboard 统计面板（总日志数、成功率、活跃服务器）
   - 📋 日志查看与搜索（支持自动刷新）
-  - 📁 WebDAV 文件浏览器（支持暗色模式）
-  - 🖥️ 服务器管理（可视化配置）
+  - 📁 WebDAV 文件浏览器（中文界面）
+  - 🖥️ 服务器管理（可视化配置 + 连接测试）
+  - 🔔 Toast 通知系统（右上角浮动通知）
+  - 📱 响应式设计（完美支持桌面和移动设备）
 
 ### 安全与性能
-- **Webhook 触发**: 可由 Vercel Cron Jobs 或任何第三方定时任务服务调用
+- **Session 登录**: 基于 Flask-Session 的现代化登录系统
 - **并发安全**: 通过数据库分布式锁，确保高频调用下的稳定性
 - **性能优化**: 数据库连接池、配置缓存、索引优化
 - **健康检查**: 提供 `/health` 端点用于服务监控
@@ -120,7 +123,6 @@ WEBDAV_SERVERS='[{"name":"Main","url":"https://dav.example.com/dav","login":"use
 - `password`: 登录密码
 - `timeout`: 超时时间（秒，可选，默认60）
 - `chunk_size`: 分块大小（字节，可选，默认8192）
-```
 
 ## 📱 Web 界面
 
@@ -145,43 +147,63 @@ WEBDAV_SERVERS='[{"name":"Main","url":"https://dav.example.com/dav","login":"use
 - ✅ 未登录访问自动跳转登录页
 - ✅ 所有页面显示当前用户和退出按钮
 
-### 🎨 现代化UI设计
+### 🎨 现代化 UI 设计
 
-应用采用现代化的**卡片式导航设计**,提供直观的用户体验:
+应用采用**极简主义设计风格**，提供直观优雅的用户体验：
 
-- **`/`** - **首页** - 现代化卡片式按钮布局
-  - 🎨 紫色渐变背景,视觉效果出众
-  - 📋 查看邮件日志 - 快速访问上传历史
-  - 📁 WebDAV 文件浏览器 - 浏览已上传文件
-  - 🖥️ 服务器管理 - 配置WebDAV服务器
+#### 设计特点
+- 🎯 **固定侧边栏导航**: 清晰的页面结构，快速导航
+- 🎨 **极简配色**: 中性色调 + 深紫色点缀，专业而不失活力
+- 📱 **全响应式**: 移动端自适应，侧边栏可折叠
+- 🔔 **Toast 通知**: 右上角优雅的浮动通知（替代传统弹窗）
+- 🖼️ **SVG 图标**: 所有图标使用 Heroicons 风格的 SVG
+- ✨ **流畅动画**: 微妙的过渡效果提升用户体验
 
-- **`/logs`** - **日志查看** - 完整的上传历史记录
-  - 📊 实时日志显示
-  - 🔍 支持搜索和分页
-  - 🔄 自动刷新功能
-  - 📈 显示文件大小和服务器信息
+#### 页面功能
 
-- **`/files`** - **文件浏览器** - dufs风格的极简设计
-  - 📁 多服务器浏览支持
-  - 🌓 自动暗色模式
-  - ⚡ 实时搜索过滤
+- **`/`** - **概览面板**
+  - 📊 Dashboard 统计卡片：总日志数、成功率、活跃服务器数
+  - 🎯 快速操作入口：日志、文件浏览器、服务器管理
+  
+- **`/logs`** - **日志查看**
+  - 📋 实时日志显示，支持分页
+  - 🔍 文件名搜索功能
+  - 🔄 可配置的自动刷新（10/30/60秒）
+  - 📈 显示文件大小、上传状态、目标服务器
+
+- **`/files`** - **文件浏览器**
+  - 📁 多服务器切换浏览
+  - 🔍 实时文件名搜索
   - 💾 在线下载文件
+  - 🗂️ 面包屑导航
+  - 🇨🇳 完整中文界面（文件名、大小、修改时间）
 
-- **`/servers`** - **服务器管理** - 可视化服务器配置
+- **`/servers`** - **服务器管理**
   - ➕ 添加新的 WebDAV 服务器
   - ✏️ 编辑现有服务器配置
   - 🗑️ 删除不需要的服务器
-  - 🔌 测试服务器连接状态
+  - 🔌 测试服务器连接（Toast 通知结果）
   - ⭐ 选择默认上传服务器
   - 🔄 启用/禁用服务器
 
-### UI特点
+### 📸 界面截图
 
-- 🎯 **简洁导航**: 所有页面统一采用"返回首页"的单一导航,避免混乱
-- 🎨 **视觉美观**: 简洁白色设计、圈角设计、悉停动画
-- 📱 **响应式**: 完美支持桌面和移动设备
-- 🌙 **暗色模式**: 文件浏览器支持自动暗色模式
-- 👤 **用户信息**: 每个页面显示当前用户和退出按钮
+#### 登录页面
+![登录页面 - 简洁的登录表单,支持用户名密码认证](static/screenshots/login.png)
+
+#### Dashboard 概览面板
+![概览面板 - Dashboard 统计卡片显示总日志数、成功率和活跃服务器数](static/screenshots/dashboard.png)
+
+#### 日志查看
+![日志查看 - 实时显示上传历史,支持搜索和自动刷新](static/screenshots/logs.png)
+
+#### 服务器管理
+![服务器管理 - 可视化配置和管理多个 WebDAV 服务器](static/screenshots/servers.png)
+
+#### 文件浏览器
+![文件浏览器 - 多服务器文件浏览,完整中文界面](static/screenshots/files.png)
+
+
 
 ## 📊 API 端点
 
@@ -202,12 +224,13 @@ WEBDAV_SERVERS='[{"name":"Main","url":"https://dav.example.com/dav","login":"use
 - **`GET /login`** - 登录页面
 - **`POST /login`** - 处理登录
 - **`GET /logout`** - 登出
-- **`GET /`** - 首页（需要登录）
-- **`GET /logs`** - 日志查看页面（需要登录）
+- **`GET /`** - 概览面板（需要登录）
+- **`GET /logs`** - 日志查看（需要登录）
 - **`GET /files`** - 文件浏览器（需要登录）
-- **`GET /servers`** - 服务器管理页面（需要登录）
+- **`GET /files/download/<path>`** - 文件下载（需要登录）
+- **`GET /servers`** - 服务器管理（需要登录）
 - **`POST /servers/set-default`** - 设置默认服务器（需要登录）
-- **`POST /servers/add`** - 添加新服务器（需要登录）
+- **`POST /servers/add`** - 添加服务器（需要登录）
 - **`POST /servers/edit/<id>`** - 编辑服务器（需要登录）
 - **`POST /servers/delete/<id>`** - 删除服务器（需要登录）
 - **`POST /servers/test/<id>`** - 测试服务器连接（需要登录）
@@ -244,10 +267,12 @@ curl -X POST https://your-project.vercel.app/api/run-task \
 
 ## 💻 本地开发
 
+### 快速启动
+
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/your-username/mailbridge.git
-cd mailbridge
+git clone https://github.com/omskk/EmailFileBackup-Cron.git
+cd EmailFileBackup-Cron
 
 # 2. 安装依赖
 pip install -r requirements.txt
@@ -256,11 +281,18 @@ pip install -r requirements.txt
 cp .env.example .env
 # 编辑 .env 文件填写配置
 
-# 4. 运行开发服务器
+# 方式 2: 直接运行
 python app.py
 ```
 
-访问 `http://localhost:5001` 查看应用。
+访问 `http://localhost:5002` 查看应用。
+
+### macOS 端口说明
+
+> ⚠️ **macOS 用户注意**: 系统的 AirPlay Receiver 服务默认占用 5000 和 5001 端口。为避免冲突，本项目默认使用 **5002** 端口。
+
+**推荐做法**:
+- 或在 `.env` 中设置 `FLASK_RUN_PORT=5002`
 
 ## 🗂️ 项目结构
 
@@ -272,8 +304,13 @@ mail_to_webdav/
 ├── mail_processor.py      # 邮件处理逻辑
 ├── logger.py              # 统一日志配置
 ├── requirements.txt       # Python 依赖
+├── static/                # 静态资源
+│   ├── css/
+│   │   └── style.css     # 全局样式（极简设计系统）
+│   └── favicon.png       # 网站图标
 ├── templates/             # HTML 模板
-│   ├── index.html        # 首页
+│   ├── base.html         # 基础模板（侧边栏导航）
+│   ├── index.html        # 概览面板
 │   ├── login.html        # 登录页面  
 │   ├── logs.html         # 日志页面
 │   ├── servers.html      # 服务器管理
@@ -286,42 +323,63 @@ mail_to_webdav/
 - **框架**: Python 3.x, Flask
 - **部署**: Vercel (无服务器)
 - **数据库**: MySQL (with connection pooling)
-- **认证**: Flask-Session (基于Session的登录)
+- **认证**: Flask-Session (基于 Session 的登录)
 - **邮件**: imbox (IMAP)
 - **WebDAV**: webdavclient3
-- **其他**: python-dotenv, requests
-  - `webdavclient3` - WebDAV 客户端
-  - `mysql-connector-python` - 数据库连接
+- **前端**: 原生 HTML/CSS/JavaScript (极简设计，无框架依赖)
+- **图标**: SVG (Heroicons 风格)
+- **其他**: python-dotenv, requests, mysql-connector-python
 
 ## 📖 使用流程
 
-1. **首次启动**: 应用会自动创建数据库表
-2. **配置服务器**: 访问 `/servers` 选择默认上传服务器
-3. **自动同步**: 定时任务触发，处理符合条件的邮件
-4. **查看日志**: 在 `/logs` 页面查看上传历史
-5. **浏览文件**: 在 `/files` 页面浏览已上传的文件
+1. **首次启动**: 应用会自动创建数据库表并导入环境变量中的服务器配置
+2. **登录界面**: 访问应用，使用配置的用户名密码登录
+3. **查看统计**: 在概览面板查看总日志数、成功率等统计信息
+4. **配置服务器**: 访问 `/servers` 页面管理 WebDAV 服务器，选择默认上传目标
+5. **自动同步**: 定时任务触发，处理符合条件的邮件并上传附件
+6. **查看日志**: 在 `/logs` 页面查看上传历史和状态
+7. **浏览文件**: 在 `/files` 页面浏览和下载已上传的文件
 
 ## 🔒 安全建议
 
 - ✅ 使用强密码（32+ 字符）作为 API 密钥
+- ✅ 为 `FLASK_SECRET_KEY` 生成随机密钥（用于 Session 加密）
 - ✅ 为邮箱启用应用专用密码（而非主密码）
 - ✅ 定期检查上传日志，确保无异常活动
 - ✅ 在生产环境使用 HTTPS
-- ✅ 限制 Web 界面访问（Basic Auth）
+- ✅ 限制数据库访问权限
+- ✅ 设置合理的附件大小限制
 
 ## 📝 常见问题
 
-**Q: 如何配置多個 WebDAV 服務器？**  
-A: 在环境变量中设置 `WEBDAV_SERVERS`（JSON 数组），然后通过 `/servers` Web 界面管理。
+**Q: 如何配置多个 WebDAV 服务器？**  
+A: 在环境变量中设置 `WEBDAV_SERVERS`（JSON 数组），首次启动后通过 `/servers` Web 界面管理。
 
 **Q: 如何切换默认上传服务器？**  
-A: 访问 `/servers` 页面，选择目标服务器并保存。
+A: 访问 `/servers` 页面，点击要设为默认的服务器左侧的单选按钮。
 
 **Q: 邮件处理失败怎么办？**  
 A: 检查 `/logs` 页面的错误信息，或查看 Vercel 日志排查问题。
 
 **Q: 支持哪些 WebDAV 服务？**  
 A: 支持所有标准 WebDAV 服务，包括 Nextcloud、ownCloud、InfiniCLOUD、坚果云等。
+
+
+**Q: 如何测试服务器连接？**  
+A: 在 `/servers` 页面点击服务器的"测试"按钮，右上角会显示 Toast 通知结果。
+
+**Q: UI 在移动设备上如何显示？**  
+A: 应用采用响应式设计，移动端会自动调整布局，侧边栏可通过汉堡菜单切换。
+
+## 🎨 UI 预览
+
+应用采用现代极简设计风格：
+- 固定侧边栏导航，快速切换页面
+- Dashboard 统计卡片，一目了然
+- Toast 通知系统，优雅提示
+- 全中文界面，无障碍使用
+- SVG 图标，清晰美观
+- 响应式布局，移动友好
 
 ## 📄 许可证
 

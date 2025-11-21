@@ -144,10 +144,18 @@ def format_size(size_bytes):
         return "-"
 
 def format_date(date_str):
-    """格式化日期 (简化)"""
+    """格式化日期 (YYYY-MM-DD HH:MM:SS)"""
     if not date_str:
         return "-"
-    return date_str
+    try:
+        # WebDAV usually returns RFC 1123 format: "Mon, 17 Nov 2025 08:24:15 GMT"
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(date_str)
+        # Convert to local time if needed, here we keep it simple or convert to UTC+8 if desired
+        # For simplicity, we format the parsed datetime object
+        return dt.strftime('%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return date_str
 
 
 # --- 路由 ---
@@ -190,7 +198,20 @@ def logout():
 @app.route('/')
 @requires_auth
 def home():
-    return render_template('index.html')
+    # Fetch dashboard stats
+    total_logs = get_total_log_count()
+    success_count = get_log_count_by_status('Success')
+    enabled_servers = len(get_enabled_servers())
+    
+    # Calculate success rate
+    success_rate = 0
+    if total_logs > 0:
+        success_rate = int((success_count / total_logs) * 100)
+        
+    return render_template('index.html', 
+                         total_logs=total_logs,
+                         success_rate=success_rate,
+                         enabled_servers=enabled_servers)
 
 
 @app.route('/logs')

@@ -1,127 +1,133 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>邮件附件处理服务</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f4f4f4;
-        }
+{% block title %}概览 - MailBridge{% endblock %}
 
-        .container {
-            text-align: center;
-            padding: 2.5em;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-        }
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">概览</h1>
+        <p class="page-subtitle">邮件附件处理服务状态面板</p>
+    </div>
+</div>
 
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-
-        .button-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .nav-button {
-            display: block;
-            padding: 15px 20px;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            text-decoration: none;
-            color: #333;
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .nav-button:hover {
-            background: #f8f8f8;
-            border-color: #007bff;
-        }
-
-        .nav-button-icon {
-            font-size: 18px;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-
-        .user-bar {
-            text-align: right;
-            padding: 0.5rem 0;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e0e0e0;
-            color: #666;
-            font-size: 13px;
-        }
-
-        .user-bar a {
-            color: #007bff;
-            text-decoration: none;
-            margin-left: 0.75rem;
-        }
-
-        .user-bar a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 2em;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="user-bar">
-            当前用户: {{ session.username }}
-            <a href="{{ url_for('logout') }}">退出</a>
+<!-- Stats Grid -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div
+            style="width: 48px; height: 48px; background: #eff6ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" x2="8" y1="13" y2="13" />
+                <line x1="16" x2="8" y1="17" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+            </svg>
         </div>
-
-        <h1>邮件附件处理服务</h1>
-        <p class="subtitle">这是一个后台服务,通过 API 触发邮件附件的自动处理。</p>
-
-        <div class="button-grid">
-            <a href="/logs" class="nav-button">
-                <span class="nav-button-icon">📋</span>查看邮件日志
-            </a>
-            <a href="/files" class="nav-button">
-                <span class="nav-button-icon">📁</span>WebDAV 文件浏览器
-            </a>
-            <a href="/servers" class="nav-button">
-                <span class="nav-button-icon">🖥️</span>服务器管理
-            </a>
+        <div>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">总处理日志</p>
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin: 0;">{{ total_logs }}</h3>
         </div>
     </div>
-</body>
 
-</html>
+    <div class="card" style="display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div
+            style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #22c55e;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+        </div>
+        <div>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">成功率</p>
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin: 0;">{{ success_rate }}%</h3>
+        </div>
+    </div>
+
+    <div class="card" style="display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div
+            style="width: 48px; height: 48px; background: #fdf4ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #d946ef;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="8" x="2" y="2" rx="2" ry="2" />
+                <rect width="20" height="8" x="2" y="14" rx="2" ry="2" />
+                <line x1="6" x2="6.01" y1="6" y2="6" />
+                <line x1="6" x2="6.01" y1="18" y2="18" />
+            </svg>
+        </div>
+        <div>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">活跃服务器</p>
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin: 0;">{{ enabled_servers }}</h3>
+        </div>
+    </div>
+</div>
+
+<h2 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">快速操作</h2>
+
+<div class="card">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <!-- Quick Actions -->
+        <a href="/logs" class="card"
+            style="margin: 0; border: 1px solid var(--border-color); box-shadow: none; transition: all 0.2s; display: flex; flex-direction: column; gap: 1rem; text-decoration: none; color: inherit;">
+            <div
+                style="width: 40px; height: 40px; background: #f0f9ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #0284c7;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" x2="8" y1="13" y2="13" />
+                    <line x1="16" x2="8" y1="17" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h3 style="font-weight: 600; margin-bottom: 0.25rem;">查看日志</h3>
+                <p class="text-muted text-sm">监控邮件处理和文件上传记录</p>
+            </div>
+        </a>
+
+        <a href="/files" class="card"
+            style="margin: 0; border: 1px solid var(--border-color); box-shadow: none; transition: all 0.2s; display: flex; flex-direction: column; gap: 1rem; text-decoration: none; color: inherit;">
+            <div
+                style="width: 40px; height: 40px; background: #fdf4ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #c026d3;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                </svg>
+            </div>
+            <div>
+                <h3 style="font-weight: 600; margin-bottom: 0.25rem;">文件浏览器</h3>
+                <p class="text-muted text-sm">浏览和管理 WebDAV 服务器文件</p>
+            </div>
+        </a>
+
+        <a href="/servers" class="card"
+            style="margin: 0; border: 1px solid var(--border-color); box-shadow: none; transition: all 0.2s; display: flex; flex-direction: column; gap: 1rem; text-decoration: none; color: inherit;">
+            <div
+                style="width: 40px; height: 40px; background: #f0fdf4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #16a34a;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="8" x="2" y="2" rx="2" ry="2" />
+                    <rect width="20" height="8" x="2" y="14" rx="2" ry="2" />
+                    <line x1="6" x2="6.01" y1="6" y2="6" />
+                    <line x1="6" x2="6.01" y1="18" y2="18" />
+                </svg>
+            </div>
+            <div>
+                <h3 style="font-weight: 600; margin-bottom: 0.25rem;">服务器管理</h3>
+                <p class="text-muted text-sm">配置 WebDAV 连接和优先级</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .card:hover {
+        border-color: var(--accent-color) !important;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

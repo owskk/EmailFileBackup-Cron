@@ -1,277 +1,48 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>附件上传日志</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
-            margin: 0;
-            padding: 1rem;
-        }
+{% block title %}附件上传日志 - MailBridge{% endblock %}
 
-        .container {
-            max-width: 1000px;
-            margin: 1rem auto;
-            padding: 1.5rem;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin: 0;
-            font-size: 22px;
-        }
-
-        .home-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-
-        .home-link:hover {
-            color: #2980b9;
-        }
-
-        .search-form {
-            margin-bottom: 1rem;
-            display: flex;
-        }
-
-        .search-form input[type="text"] {
-            flex-grow: 1;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px 0 0 4px;
-            font-size: 0.875rem;
-        }
-
-        .search-form button {
-            padding: 0.5rem 1rem;
-            border: 1px solid #3498db;
-            background-color: #3498db;
-            color: white;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
-
-        .search-form button:hover {
-            background-color: #2980b9;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0.75rem;
-        }
-
-        th,
-        td {
-            padding: 0.6rem 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-            font-size: 0.875rem;
-        }
-
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
-
-        tbody tr:hover {
-            background-color: #f1f3f5;
-        }
-
-        .status-success {
-            color: #2ecc71;
-            font-weight: bold;
-        }
-
-        .status-failed {
-            color: #e74c3c;
-            font-weight: bold;
-        }
-
-        .no-logs {
-            text-align: center;
-            color: #7f8c8d;
-            padding: 2rem;
-            font-size: 0.95rem;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        .pagination a,
-        .pagination span {
-            color: #3498db;
-            padding: 0.5rem 0.75rem;
-            margin: 0 0.2rem;
-            text-decoration: none;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            transition: background-color 0.3s, color 0.3s;
-            font-size: 0.875rem;
-        }
-
-        .pagination a:hover {
-            background-color: #3498db;
-            color: #fff;
-            border-color: #3498db;
-        }
-
-        .pagination .current {
-            background-color: #3498db;
-            color: #fff;
-            border-color: #3498db;
-            font-weight: bold;
-        }
-
-        .pagination .disabled {
-            color: #bdc3c7;
-            pointer-events: none;
-            border-color: #ddd;
-        }
-
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .auto-refresh-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.75rem;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .auto-refresh-control select {
-            padding: 0.3rem 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            background-color: white;
-            cursor: pointer;
-        }
-
-        .auto-refresh-control select:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        #refreshStatus {
-            font-weight: 500;
-            color: #495057;
-        }
-
-        /* Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: #2ecc71;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(24px);
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="user-bar">
-            当前用户: {{ session.username }}
-            <a href="{{ url_for('logout') }}">退出</a>
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">附件上传日志</h1>
+        <p class="page-subtitle">查看所有邮件附件的处理记录和状态</p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="auto-refresh-control"
+            style="display: flex; align-items: center; gap: 0.5rem; background: white; padding: 0.5rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <label class="switch" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="autoRefreshToggle" style="accent-color: var(--success-color);">
+                <span style="font-size: 0.875rem; font-weight: 500;">自动刷新</span>
+            </label>
+            <select id="refreshInterval" class="form-control"
+                style="width: auto; padding: 0.25rem 0.5rem; font-size: 0.875rem;" disabled>
+                <option value="10">10秒</option>
+                <option value="30" selected>30秒</option>
+                <option value="60">60秒</option>
+            </select>
         </div>
+    </div>
+</div>
 
-        <div class="header">
-            <h1>附件上传日志</h1>
-            <div class="header-controls">
-                <div class="auto-refresh-control">
-                    <label class="switch">
-                        <input type="checkbox" id="autoRefreshToggle">
-                        <span class="slider"></span>
-                    </label>
-                    <span id="refreshStatus">自动刷新: 关闭</span>
-                    <select id="refreshInterval" disabled>
-                        <option value="10">10秒</option>
-                        <option value="30" selected>30秒</option>
-                        <option value="60">60秒</option>
-                    </select>
-                </div>
-                <a href="/" class="home-link">← 返回首页</a>
-            </div>
+<div class="card">
+    <form action="{{ url_for('view_logs') }}" method="get" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem;">
+        <div style="position: relative; flex: 1; max-width: 400px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" x2="16.65" y1="21" y2="16.65" />
+            </svg>
+            <input type="text" name="q" class="form-control" placeholder="搜索文件名..." value="{{ search_query or '' }}"
+                style="padding-left: 2.5rem;">
         </div>
+        <button type="submit" class="btn btn-primary">搜索</button>
+    </form>
 
-        <form action="{{ url_for('view_logs') }}" method="get" class="search-form">
-            <input type="text" name="q" placeholder="按文件名搜索..." value="{{ search_query or '' }}">
-            <button type="submit">搜索</button>
-        </form>
-
-        {% if logs %}
-        <table>
+    {% if logs %}
+    <div class="table-container">
+        <table class="table">
             <thead>
                 <tr>
                     <th>时间</th>
@@ -284,115 +55,120 @@
             <tbody>
                 {% for log in logs %}
                 <tr>
-                    <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    <td>{{ log.filename }}</td>
-                    <td>{{ log.size_readable }}</td>
-                    <td>{{ log.server_name or '-' }}</td>
+                    <td style="color: var(--text-secondary); font-family: var(--font-mono);">{{
+                        log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td style="font-weight: 500;">{{ log.filename }}</td>
+                    <td style="color: var(--text-secondary);">{{ log.size_readable }}</td>
+                    <td>
+                        {% if log.server_name %}
+                        <span class="badge badge-neutral">{{ log.server_name }}</span>
+                        {% else %}
+                        <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if log.status == 'Success' %}
-                        <span class="status-success">成功</span>
+                        <span class="badge badge-success">成功</span>
                         {% else %}
-                        <span class="status-failed">失败</span>
+                        <span class="badge badge-error">失败</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-        <div class="pagination">
-            {% if page > 1 %}
-            <a href="{{ url_for('view_logs', page=page-1, q=search_query) }}">« 上一页</a>
-            {% else %}
-            <span class="disabled">« 上一页</span>
-            {% endif %}
-
-            {% for p in range(1, total_pages + 1) %}
-            {% if p == page %}
-            <span class="current">{{ p }}</span>
-            {% else %}
-            <a href="{{ url_for('view_logs', page=p, q=search_query) }}">{{ p }}</a>
-            {% endif %}
-            {% endfor %}
-
-            {% if page < total_pages %} <a href="{{ url_for('view_logs', page=page+1, q=search_query) }}">下一页 »</a>
-                {% else %}
-                <span class="disabled">下一页 »</span>
-                {% endif %}
-        </div>
-
-        {% else %}
-        <p class="no-logs">还没有任何日志记录。</p>
-        {% endif %}
     </div>
-    <script>
-        // 自动刷新控制
-        let refreshTimer = null;
-        const toggle = document.getElementById('autoRefreshToggle');
-        const statusText = document.getElementById('refreshStatus');
-        const intervalSelect = document.getElementById('refreshInterval');
 
-        // 从 localStorage 加载用户设置
-        const savedEnabled = localStorage.getItem('autoRefreshEnabled') === 'true';
-        const savedInterval = localStorage.getItem('refreshInterval') || '30';
+    <!-- Pagination -->
+    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem;">
+        {% if page > 1 %}
+        <a href="{{ url_for('view_logs', page=page-1, q=search_query) }}" class="btn btn-secondary btn-sm">上一页</a>
+        {% else %}
+        <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.5; cursor: not-allowed;">上一页</button>
+        {% endif %}
 
-        toggle.checked = savedEnabled;
-        intervalSelect.value = savedInterval;
-        updateStatus();
+        {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="btn btn-primary btn-sm" style="cursor: default;">{{ p }}</span>
+        {% else %}
+        <a href="{{ url_for('view_logs', page=p, q=search_query) }}" class="btn btn-secondary btn-sm">{{ p }}</a>
+        {% endif %}
+        {% endfor %}
 
-        // 如果之前是开启状态，启动刷新
-        if (savedEnabled) {
+        {% if page < total_pages %} <a href="{{ url_for('view_logs', page=page+1, q=search_query) }}"
+            class="btn btn-secondary btn-sm">下一页</a>
+            {% else %}
+            <button class="btn btn-secondary btn-sm" disabled style="opacity: 0.5; cursor: not-allowed;">下一页</button>
+            {% endif %}
+    </div>
+
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+            style="margin-bottom: 1rem; opacity: 0.5;">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" x2="12" y1="8" y2="12" />
+            <line x1="12" x2="12.01" y1="16" y2="16" />
+        </svg>
+        <p>暂无日志记录</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 自动刷新控制
+    let refreshTimer = null;
+    const toggle = document.getElementById('autoRefreshToggle');
+    const intervalSelect = document.getElementById('refreshInterval');
+
+    // 从 localStorage 加载用户设置
+    const savedEnabled = localStorage.getItem('autoRefreshEnabled') === 'true';
+    const savedInterval = localStorage.getItem('refreshInterval') || '30';
+
+    toggle.checked = savedEnabled;
+    intervalSelect.value = savedInterval;
+    intervalSelect.disabled = !savedEnabled;
+
+    // 如果之前是开启状态，启动刷新
+    if (savedEnabled) {
+        startAutoRefresh();
+    }
+
+    // 切换开关事件
+    toggle.addEventListener('change', function () {
+        localStorage.setItem('autoRefreshEnabled', this.checked);
+        intervalSelect.disabled = !this.checked;
+        if (this.checked) {
+            startAutoRefresh();
+        } else {
+            stopAutoRefresh();
+        }
+    });
+
+    // 刷新间隔改变事件
+    intervalSelect.addEventListener('change', function () {
+        localStorage.setItem('refreshInterval', this.value);
+        if (toggle.checked) {
+            stopAutoRefresh();
             startAutoRefresh();
         }
+    });
 
-        // 切换开关事件
-        toggle.addEventListener('change', function () {
-            localStorage.setItem('autoRefreshEnabled', this.checked);
-            if (this.checked) {
-                startAutoRefresh();
-            } else {
-                stopAutoRefresh();
-            }
-            updateStatus();
-        });
+    function startAutoRefresh() {
+        const interval = parseInt(intervalSelect.value) * 1000;
+        refreshTimer = setTimeout(function () {
+            window.location.reload();
+        }, interval);
+    }
 
-        // 刷新间隔改变事件
-        intervalSelect.addEventListener('change', function () {
-            localStorage.setItem('refreshInterval', this.value);
-            if (toggle.checked) {
-                stopAutoRefresh();
-                startAutoRefresh();
-            }
-        });
-
-        function startAutoRefresh() {
-            intervalSelect.disabled = false;
-            const interval = parseInt(intervalSelect.value) * 1000;
-            refreshTimer = setTimeout(function () {
-                window.location.reload();
-            }, interval);
+    function stopAutoRefresh() {
+        if (refreshTimer) {
+            clearTimeout(refreshTimer);
+            refreshTimer = null;
         }
-
-        function stopAutoRefresh() {
-            intervalSelect.disabled = true;
-            if (refreshTimer) {
-                clearTimeout(refreshTimer);
-                refreshTimer = null;
-            }
-        }
-
-        function updateStatus() {
-            if (toggle.checked) {
-                statusText.textContent = `自动刷新: 开启 (${intervalSelect.value}秒)`;
-                statusText.style.color = '#2ecc71';
-                intervalSelect.disabled = false;
-            } else {
-                statusText.textContent = '自动刷新: 关闭';
-                statusText.style.color = '#495057';
-                intervalSelect.disabled = true;
-            }
-        }
-    </script>
-</body>
-
-</html>
+    }
+</script>
+{% endblock %}
